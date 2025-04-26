@@ -1,22 +1,20 @@
+{{
+    config(
+        materialized = 'table',
+    )
+}}
 
--- metricflow_time_spine.sql
-with 
+with days as (
 
-days as (
-    
-    --for BQ adapters use "DATE('01/01/2000','mm/dd/yyyy')"
-    {{ dbt_date.get_base_dates(n_dateparts=365*10, datepart="day") }}
-
-),
-
-cast_to_date as (
-
-    select 
-        cast(date_day as date) as date_day,
-        date_trunc('quarter', date_day) as almost_fiscal_quarter
-    
-    from days
+{{ dbt_utils.date_spine(
+    datepart="day",
+    start_date="cast('2020-01-01' as date)",
+    end_date="cast('2026-01-01' as date)"
+   )
+}}
 
 )
 
-select * from cast_to_date
+    select cast(date_day as date) as date_day
+    , date_trunc(cast(date_day as date), QUARTER) as almost_fiscal_quarter
+    from days
